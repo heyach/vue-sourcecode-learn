@@ -2086,25 +2086,6 @@
 
     /*  */
 
-    var mark;
-    var measure;
-
-    {
-        var perf = inBrowser && window.performance;
-        window.perff = perf;
-        /* istanbul ignore if */
-        if (perf && perf.mark && perf.measure && perf.clearMarks && perf.clearMeasures) {
-            mark = function (tag) {
-                return perf.mark(tag);
-            };
-            measure = function (name, startTag, endTag) {
-                perf.measure(name, startTag, endTag);
-                perf.clearMarks(startTag);
-                perf.clearMarks(endTag);
-                // perf.clearMeasures(name)
-            };
-        }
-    }
 
     /* not type checking this file because flow doesn't play well with Proxy */
 
@@ -4007,15 +3988,9 @@
                 var startTag = "vue-perf-start:" + id;
                 var endTag = "vue-perf-end:" + id;
 
-                mark(startTag);
                 var vnode = vm._render();
-                mark(endTag);
-                measure("vue " + name + " render", startTag, endTag);
 
-                mark(startTag);
                 vm._update(vnode, hydrating);
-                mark(endTag);
-                measure("vue " + name + " patch", startTag, endTag);
             };
         } else {
             updateComponent = function () {
@@ -4883,14 +4858,6 @@
             // a uid
             vm._uid = uid$3++;
 
-            var startTag, endTag;
-            /* istanbul ignore if */
-            if (config.performance && mark) {
-                startTag = "vue-perf-start:" + vm._uid;
-                endTag = "vue-perf-end:" + vm._uid;
-                mark(startTag);
-            }
-
             // a flag to avoid this being observed
             vm._isVue = true;
             // merge options
@@ -4918,10 +4885,8 @@
             callHook(vm, "created");
 
             /* istanbul ignore if */
-            if (config.performance && mark) {
+            if (config.performance) {
                 vm._name = formatComponentName(vm, false);
-                mark(endTag);
-                measure("vue " + vm._name + " init", startTag, endTag);
             }
 
             if (vm.$options.el) {
@@ -11812,8 +11777,7 @@
             }
             if (template) {
                 /* istanbul ignore if */
-                if (config.performance && mark) {
-                    mark("compile");
+                if (config.performance) {
                 }
 
                 var ref = compileToFunctions(
@@ -11833,9 +11797,7 @@
                 options.staticRenderFns = staticRenderFns;
 
                 /* istanbul ignore if */
-                if (config.performance && mark) {
-                    mark("compile end");
-                    measure("vue " + this._name + " compile", "compile", "compile end");
+                if (config.performance) {
                 }
             }
         }

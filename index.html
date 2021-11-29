@@ -10,22 +10,66 @@
     <div id="app">
         <h1>{{name}}</h1>
         <h1>{{rname}}</h1>
+        <h2 @click="changeName">changeName</h2>
+        <my-component-a prop-A="propsA"></my-component-a>
+        <my-component-b prop-B="propsB" prop-B1="propB1"></my-component-b>
     </div>
     <script src="vue.js"></script>
     <script>
-        window.onload = function() {
-            new Vue({
-                el: "#app",
-                data: {
-                    name: "aaa"
-                },
-                computed: {
-                    rname() {
-                        return this.name + "bbb"
+        var myComponentA = {
+            props: {
+                propA: String
+            },
+            // 自定义指令
+            directives: {
+                focus: {
+                    // 指令的定义
+                    inserted: function (el) {
+                        el.focus()
                     }
                 }
-            })
+            },
+            data: function() {
+                return {
+                    valA: "valA"
+                }
+            },
+            template: "<h2>{{valA}}-{{propA}}<input v-focus></h2>"
         }
+        var myComponentB = {
+            props: ['propB', 'propB1'],
+            data: function() {
+                return {
+                    valB: "valB"
+                }
+            },
+            template: "<h2>{{valB}}-{{propB}}-{{propB1}}</h2>"
+        }
+        new Vue({
+            el: "#app",
+            components: {
+                "my-component-a": myComponentA,
+                "my-component-b": myComponentB
+            },
+            data: {
+                name: "aaa"
+            },
+            computed: {
+                rname() {
+                    return this.name + "bbb"
+                }
+            },
+            methods: {
+                changeName: function(){
+                    this.name = "tttyyy"
+                }
+            },
+            watch: {
+                "name": function(newVal, oldVal) {
+                    console.log(newVal, oldVal)
+                }
+            }
+        })
     </script>
 </body>
 </html>
