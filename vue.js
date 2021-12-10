@@ -853,8 +853,9 @@
     var uid = 0;
 
     /**
-     * A dep is an observable that can have multiple
-     * directives subscribing to it.
+      A dep is an observable that can have multiple
+      directives subscribing to it.
+      dep是一个可观察对象，可以有多个指令订阅它。
      */
     var Dep = function Dep() {
         this.id = uid++;
@@ -890,10 +891,12 @@
             subs[i].update();
         }
     };
-
-    // The current target watcher being evaluated.
-    // This is globally unique because only one watcher
-    // can be evaluated at a time.
+    /*
+    The current target watcher being evaluated.
+    This is globally unique because only one watcher
+    can be evaluated at a time.
+    正在评估的当前目标观察者。这是全局唯一的，因为一次只能评估一个观察者
+    */
     Dep.target = null;
     var targetStack = [];
 
@@ -1281,6 +1284,7 @@
      * how to merge a parent option value and a child option
      * value into the final value.
      */
+    // 选项覆盖策略是处理如何将父选项值和子选项值合并到最终值的函数
     var strats = config.optionMergeStrategies;
 
     /**
