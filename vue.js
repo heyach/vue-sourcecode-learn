@@ -651,7 +651,17 @@
             return obj;
         };
     }
-
+    var ooo = { 
+        msg: {
+            name: {
+                d: {
+                    c: "sasasasa"
+                }
+            }
+        }
+    };
+    parsePath("msg.name.d.c")(ooo)
+    // sasasasa
     /*  */
 
     // can we use __proto__?
