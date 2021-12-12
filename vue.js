@@ -610,7 +610,7 @@
      */
     var unicodeRegExp =
         /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD/;
-
+    
     /**
      * Check if a string starts with $ or _
      */
@@ -635,6 +635,11 @@
     /**
      * Parse simple path.
      */
+    // 根据属性访问链获取值，防治undefined
+    // var obj = {a: {b: {c: {d: "ddd"}}}}
+    // parsePath("a.b.c.d")(obj)
+    // ddd
+    // 如果直接用obj.a.b.c.d获取值，很容易就出现Cannot read property 'xxx' of undefined
     var bailRE = new RegExp("[^" + unicodeRegExp.source + ".$_\\d]");
     function parsePath(path) {
         if (bailRE.test(path)) {
@@ -727,6 +732,8 @@
         typeof Symbol !== "undefined" && isNative(Symbol) && typeof Reflect !== "undefined" && isNative(Reflect.ownKeys);
 
     var _Set;
+
+    // 利用对象只有唯一属性名的方式实现一个set（类似于数组，但是成员的值都是唯一的，没有重复的值），重复添加会被覆盖，始终保持唯一
     /* istanbul ignore if */ // $flow-disable-line
     if (typeof Set !== "undefined" && isNative(Set)) {
         // use native Set when available.
@@ -1190,6 +1197,10 @@
             set: function reactiveSetter(newVal) {
                 var value = getter ? getter.call(obj) : val;
                 /* eslint-disable no-self-compare */
+                // newVal可能是NaN，只有NaN != NaN
+                // var a = 1, b = NaN
+                // a != a false
+                // b != b true
                 if (newVal === value || (newVal !== newVal && value !== value)) {
                     return;
                 }

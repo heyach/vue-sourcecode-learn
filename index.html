@@ -11,7 +11,7 @@
         <h1>{{name}}</h1>
         <h1>{{rname}}</h1>
         <h2 @click="changeName">changeName</h2>
-        <my-component-a prop-A="propsA"></my-component-a>
+        <my-component-a prop-A="propsA" @changeName="changeName"></my-component-a>
         <my-component-b prop-B="propsB" prop-B1="propB1"></my-component-b>
     </div>
     <script src="vue.js"></script>

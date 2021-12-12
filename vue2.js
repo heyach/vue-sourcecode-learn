@@ -33,279 +33,6 @@
         _lifecycleHooks: LIFECYCLE_HOOKS,
     };
 
-
-    var bailRE = new RegExp("[^" + unicodeRegExp.source + ".$_\\d]");
-    function parsePath(path) {
-        if (bailRE.test(path)) {
-            return;
-        }
-        var segments = path.split(".");
-        return function (obj) {
-            for (var i = 0; i < segments.length; i++) {
-                if (!obj) {
-                    return;
-                }
-                obj = obj[segments[i]];
-            }
-            return obj;
-        };
-    }
-
-    /*  */
-
-    // can we use __proto__?
-    var hasProto = "__proto__" in {};
-
-    // Browser environment sniffing
-    var inBrowser = typeof window !== "undefined";
-    var inWeex = typeof WXEnvironment !== "undefined" && !!WXEnvironment.platform;
-    var weexPlatform = inWeex && WXEnvironment.platform.toLowerCase();
-    var UA = inBrowser && window.navigator.userAgent.toLowerCase();
-    var isIE = UA && /msie|trident/.test(UA);
-    var isIE9 = UA && UA.indexOf("msie 9.0") > 0;
-    var isEdge = UA && UA.indexOf("edge/") > 0;
-    var isAndroid = (UA && UA.indexOf("android") > 0) || weexPlatform === "android";
-    var isIOS = (UA && /iphone|ipad|ipod|ios/.test(UA)) || weexPlatform === "ios";
-    var isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
-    var isPhantomJS = UA && /phantomjs/.test(UA);
-    var isFF = UA && UA.match(/firefox\/(\d+)/);
-
-    // Firefox has a "watch" function on Object.prototype...
-    var nativeWatch = {}.watch;
-
-    var supportsPassive = false;
-    if (inBrowser) {
-        try {
-            var opts = {};
-            Object.defineProperty(opts, "passive", {
-                get: function get() {
-                    /* istanbul ignore next */
-                    supportsPassive = true;
-                },
-            }); // https://github.com/facebook/flow/issues/285
-            window.addEventListener("test-passive", null, opts);
-        } catch (e) {}
-    }
-
-    // this needs to be lazy-evaled because vue may be required before
-    // vue-server-renderer can set VUE_ENV
-    var _isServer;
-    var isServerRendering = function () {
-        if (_isServer === undefined) {
-            /* istanbul ignore if */
-            if (!inBrowser && !inWeex && typeof global !== "undefined") {
-                // detect presence of vue-server-renderer and avoid
-                // Webpack shimming the process
-                _isServer = global["process"] && global["process"].env.VUE_ENV === "server";
-            } else {
-                _isServer = false;
-            }
-        }
-        return _isServer;
-    };
-
-    // detect devtools
-    var devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
-
-    /* istanbul ignore next */
-    function isNative(Ctor) {
-        return typeof Ctor === "function" && /native code/.test(Ctor.toString());
-    }
-
-    var hasSymbol =
-        typeof Symbol !== "undefined" && isNative(Symbol) && typeof Reflect !== "undefined" && isNative(Reflect.ownKeys);
-
-    var _Set;
-    /* istanbul ignore if */ // $flow-disable-line
-    if (typeof Set !== "undefined" && isNative(Set)) {
-        // use native Set when available.
-        _Set = Set;
-    } else {
-        // a non-standard Set polyfill that only works with primitive keys.
-        _Set = /*@__PURE__*/ (function () {
-            function Set() {
-                this.set = Object.create(null);
-            }
-            Set.prototype.has = function has(key) {
-                return this.set[key] === true;
-            };
-            Set.prototype.add = function add(key) {
-                this.set[key] = true;
-            };
-            Set.prototype.clear = function clear() {
-                this.set = Object.create(null);
-            };
-
-            return Set;
-        })();
-    }
-
-    /*  */
-
-    var warn = noop;
-    var tip = noop;
-    var generateComponentTrace = noop; // work around flow check
-    var formatComponentName = noop;
-
-    {
-        var hasConsole = typeof console !== "undefined";
-        var classifyRE = /(?:^|[-_])(\w)/g;
-        var classify = function (str) {
-            return str
-                .replace(classifyRE, function (c) {
-                    return c.toUpperCase();
-                })
-                .replace(/[-_]/g, "");
-        };
-
-        warn = function (msg, vm) {
-            var trace = vm ? generateComponentTrace(vm) : "";
-
-            if (config.warnHandler) {
-                config.warnHandler.call(null, msg, vm, trace);
-            } else if (hasConsole && !config.silent) {
-                console.error("[Vue warn]: " + msg + trace);
-            }
-        };
-
-        tip = function (msg, vm) {
-            if (hasConsole && !config.silent) {
-                console.warn("[Vue tip]: " + msg + (vm ? generateComponentTrace(vm) : ""));
-            }
-        };
-
-        formatComponentName = function (vm, includeFile) {
-            if (vm.$root === vm) {
-                return "<Root>";
-            }
-            var options =
-                typeof vm === "function" && vm.cid != null
-                    ? vm.options
-                    : vm._isVue
-                    ? vm.$options || vm.constructor.options
-                    : vm;
-            var name = options.name || options._componentTag;
-            var file = options.__file;
-            if (!name && file) {
-                var match = file.match(/([^/\\]+)\.vue$/);
-                name = match && match[1];
-            }
-
-            return (name ? "<" + classify(name) + ">" : "<Anonymous>") + (file && includeFile !== false ? " at " + file : "");
-        };
-
-        var repeat = function (str, n) {
-            var res = "";
-            while (n) {
-                if (n % 2 === 1) {
-                    res += str;
-                }
-                if (n > 1) {
-                    str += str;
-                }
-                n >>= 1;
-            }
-            return res;
-        };
-
-        generateComponentTrace = function (vm) {
-            if (vm._isVue && vm.$parent) {
-                var tree = [];
-                var currentRecursiveSequence = 0;
-                while (vm) {
-                    if (tree.length > 0) {
-                        var last = tree[tree.length - 1];
-                        if (last.constructor === vm.constructor) {
-                            currentRecursiveSequence++;
-                            vm = vm.$parent;
-                            continue;
-                        } else if (currentRecursiveSequence > 0) {
-                            tree[tree.length - 1] = [last, currentRecursiveSequence];
-                            currentRecursiveSequence = 0;
-                        }
-                    }
-                    tree.push(vm);
-                    vm = vm.$parent;
-                }
-                return (
-                    "\n\nfound in\n\n" +
-                    tree
-                        .map(function (vm, i) {
-                            return (
-                                "" +
-                                (i === 0 ? "---> " : repeat(" ", 5 + i * 2)) +
-                                (Array.isArray(vm)
-                                    ? formatComponentName(vm[0]) + "... (" + vm[1] + " recursive calls)"
-                                    : formatComponentName(vm))
-                            );
-                        })
-                        .join("\n")
-                );
-            } else {
-                return "\n\n(found in " + formatComponentName(vm) + ")";
-            }
-        };
-    }
-
-    /*  */
-
-    var uid = 0;
-
-    /**
-     * A dep is an observable that can have multiple
-     * directives subscribing to it.
-     */
-    var Dep = function Dep() {
-        this.id = uid++;
-        this.subs = [];
-    };
-
-    Dep.prototype.addSub = function addSub(sub) {
-        this.subs.push(sub);
-    };
-
-    Dep.prototype.removeSub = function removeSub(sub) {
-        remove(this.subs, sub);
-    };
-
-    Dep.prototype.depend = function depend() {
-        if (Dep.target) {
-            Dep.target.addDep(this);
-        }
-    };
-
-    Dep.prototype.notify = function notify() {
-        // stabilize the subscriber list first
-        var subs = this.subs.slice();
-        if (!config.async) {
-            // subs aren't sorted in scheduler if not running async
-            // we need to sort them now to make sure they fire in correct
-            // order
-            subs.sort(function (a, b) {
-                return a.id - b.id;
-            });
-        }
-        for (var i = 0, l = subs.length; i < l; i++) {
-            subs[i].update();
-        }
-    };
-
-    // The current target watcher being evaluated.
-    // This is globally unique because only one watcher
-    // can be evaluated at a time.
-    Dep.target = null;
-    var targetStack = [];
-
-    function pushTarget(target) {
-        targetStack.push(target);
-        Dep.target = target;
-    }
-
-    function popTarget() {
-        targetStack.pop();
-        Dep.target = targetStack[targetStack.length - 1];
-    }
-
     /*  */
 
     var VNode = function VNode(tag, data, children, text, elm, context, componentOptions, asyncFactory) {
@@ -334,15 +61,6 @@
         this.isAsyncPlaceholder = false;
     };
 
-    var prototypeAccessors = { child: { configurable: true } };
-
-    // DEPRECATED: alias for componentInstance for backwards compat.
-    /* istanbul ignore next */
-    prototypeAccessors.child.get = function () {
-        return this.componentInstance;
-    };
-
-    Object.defineProperties(VNode.prototype, prototypeAccessors);
 
     var createEmptyVNode = function (text) {
         if (text === void 0) text = "";
@@ -433,15 +151,6 @@
 
     var arrayKeys = Object.getOwnPropertyNames(arrayMethods);
 
-    /**
-     * In some cases we may want to disable observation inside a component's
-     * update computation.
-     */
-    var shouldObserve = true;
-
-    function toggleObserving(value) {
-        shouldObserve = value;
-    }
 
     /**
      * Observer class that is attached to each observed
@@ -802,7 +511,7 @@
     }
 
     LIFECYCLE_HOOKS.forEach(function (hook) {
-        strats[hook] = mergeHook;
+        strats[hook] = mergeHook; 
     });
 
     /**
@@ -11158,7 +10867,7 @@
                 if (typeof template === "string") {
                     if (template.charAt(0) === "#") {
                         template = idToTemplate(template);
-                        /* istanbul ignore if */
+                        /* istanbul ignore  if */
                         if (!template) {
                             warn("Template element not found or is empty: " + options.template, this);
                         }
