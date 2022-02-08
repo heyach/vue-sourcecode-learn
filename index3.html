@@ -8,9 +8,9 @@
 </head>
 <body>
     <div id="app">
-        <!-- <input type="text" v-model="word"> -->
+        <input type="text" v-model="word">
         <p>{{word}}</p>
-        <!-- <button v-on:click="sayHi">change model</button> -->
+        <button v-on:click="sayHi">change model</button>
     </div>
     <script src="myvue.js"></script>
     <script>
@@ -19,11 +19,11 @@
                 data: {
                     word: 'Hello World!'
                 },
-                // methods: {
-                //     sayHi: function() {
-                //         this.word = 'Hi, everybody!';
-                //     }
-                // }
+                methods: {
+                    sayHi: function() {
+                        this.word = 'Hi, everybody!';
+                    }
+                }
             });
     </script>
 </body>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <ul id="ul">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <div id="btn">更新</div>
+    <script>
+        // 现在有一个vnode描述页面上的ul
+        var oldNode = {
+            tag: "ul",
+            children: [{
+                tag: "li",
+                text: "1",
+                children: null
+            },{
+                tag: "li",
+                text: "2",
+                children: null
+            },{
+                tag: "li",
+                text: "3",
+                children: null
+            }]
+        }
+        // 接下来我们获得了一个新的vnode
+        var newNode = {
+            tag: "ul",
+            children: [{
+                tag: "li",
+                text: "2",
+                children: null
+            },{
+                tag: "li",
+                text: "3",
+                children: null
+            },{
+                tag: "li",
+                text: "4",
+                children: null
+            },{
+                tag: "li",
+                text: "1",
+                children: null
+            }]
+        }
+        function getElmByText(text) {
+            var lis = document.getElementById("ul").children
+            var r
+            for(let i = 0;i < lis.length;i++) {
+                if(lis[i].textContent == text) {
+                    r = lis[i]
+                }
+            }
+            return r
+        }
+        // 现在我们要判断出来1,2,3是可以复用的，只需要移动位置，然后新增一个4，这样是最小的dom操作，这里暂时不考虑递归li的问题
+        function patch(oldNode, newNode) {
+            // 用首尾指针法
+            var oldsIndex = 0
+            var oldeIndex = oldNode.length - 1
+            var newsIndex = 0
+            var neweIndex = newNode.length - 1
+
+            var parent = document.getElementById("ul")
+
+            // 指针越过即结束循环
+            while(oldsIndex <= oldeIndex && newsIndex <= neweIndex) {
+                // 先平行比较，
+                if(oldNode[oldsIndex].text == newNode[newsIndex].text) {
+                    // 节点可以复用，移动指针
+                    oldsIndex++
+                    newsIndex++
+                } else if(oldNode[oldeIndex].text == newNode[neweIndex].text) {
+                    // 节点可以复用，移动指针
+                    oldeIndex--
+                    neweIndex--
+                } else if(oldNode[oldsIndex].text == newNode[neweIndex].text) {
+                    // 交叉比较
+                    // 节点可以复用，移动指针，还需要移动节点，把oldsIndex这个元素移动到oldeIndex的下一个元素之前，即最后一个元素的后面
+                    parent.insertBefore(getElmByText(oldNode[oldsIndex].text), getElmByText(oldNode[oldeIndex].text).nextSibling)
+                    oldsIndex++
+                    neweIndex--
+                } else if(oldNode[oldeIndex].text == newNode[newsIndex].text) {
+                    // 交叉比较
+                    // 节点可以复用，移动指针，还需要移动节点，即把oldeIndex移到oldsIndex前面
+                    parent.insertBefore(oldNode[oldeIndex], oldNode[oldsIndex])
+                    oldeIndex--
+                    newsIndex++
+                } else {
+                    // [1,2,3]
+                    // [4,2,5,6]
+                    // 这个时候，olds的1不等于news的4，olds的1也不等于newe的5，olde的3不等于news的4，也不等于newe的5，但是，但是，但是，2是可以复用的
+                    // 所以要以new为基准，一个个的去找old中是否有可以复用的，4->1不能复用，2->可以复用，5->3不能复用，6->null不能复用
+                    newsIndex++
+                }
+            }
+            // 还要处理不复用的，new中直接新增，old中直接删除
+            if (oldsIndex > oldeIndex) {
+                // 直接新增newsIndex到neweIndex的元素
+            } else if (newStartIdx > newEndIdx) {
+                // 直接移除oldsIndex到oldeIndex的元素
+            }
+        }
+        document.getElementById("btn").onclick = function() {
+            patch(oldNode.children, newNode.children)
+        }
+    </script>
+</body>
+</html>
