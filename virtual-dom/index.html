@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <ul class="ul">
+            <li class="li">1</li>
+            <li class="li">2</li>
+            <li class="li">3</li>
+            <li class="li">4</li>
+        </ul>
+        <button>button</button>
+    </div>
+    <script>
+        // 根据真实dom构建vdom
+        function createVDom(realnode) {
+            function createVNode(node) {
+                // 构造一个节点
+                var n = {
+                    tag: "",
+                    children: [],
+                    props: {
+                        id: "",
+                        class: ""
+                    },
+                    innerHTML: ""
+                }
+                n.tag = node.nodeName
+                node.id ? (n.props.id = node.id) : null
+                node.className ? (n.props.class = node.className) : null
+                // 节点没有children 不用往下遍历了
+                if(node.children.length > 0) {
+                    for(let i = 0;i < node.children.length;i++) {
+                        n.children.push(createVNode(node.children[i]))
+                    }
+                } else {
+                    n.innerHTML = node.innerHTML
+                }
+                return n
+            }
+            return createVNode(realnode)
+        }
+        var vdom = createVDom(document.getElementById("app"))
+        console.log(vdom)
+
+        // 根据vdom创建真实dom
+        function createElementByVDom(vnode) {
+            function createDom(node) {
+                var dom = document.createElement(node.tag)
+                dom.id = node.props.id
+                dom.className = node.props.class
+
+                if(node.children.length > 0) {
+                    for(let i = 0;i < node.children.length;i++) {
+                        dom.appendChild(createDom(node.children[i]))
+                    }
+                } else {
+                    dom.innerHTML = node.innerHTML
+                }
+                return dom
+            }
+            return createDom(vnode)
+        }
+        document.body.appendChild(createElementByVDom(vdom))
+    </script>
+</body>
+</html>
