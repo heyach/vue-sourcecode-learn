@@ -128,4 +128,9 @@ function createElementByVDom(vnode) {
     return createDom(vnode)
 }
 ```
+
+![](https://raw.githubusercontent.com/heyach/blog/main/images/vuesourcecode/create-vdom.jpg)
+
+![](https://raw.githubusercontent.com/heyach/blog/main/images/vuesourcecode/create-dom.jpg)
+
 这样就可以掌握页面的结构，再辅以其他数据绑定，交互，数据更新逻辑，diff，可以最小程度的更新dom
