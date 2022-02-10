@@ -4,9 +4,11 @@
 
 ### 对比
 真实DOM
+
 ![](https://raw.githubusercontent.com/heyach/blog/main/images/vuesourcecode/real-dom.gif)
 
 虚拟DOM
+
 ![](https://raw.githubusercontent.com/heyach/blog/main/images/vuesourcecode/virtual-dom.jpg)
 
 ### 实现思路
