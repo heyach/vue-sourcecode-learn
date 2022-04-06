@@ -276,6 +276,40 @@ MVVM.prototype = {
         })
     }
 }
+var html = `
+    <div id="app">
+        <input type="text" v-model="word">
+        <p>{{word}}</p>
+        <button v-on:click="sayHi">change model</button>
+    </div>
+`
+var html2 = `
+    <div id="app2">
+        <input type="text" v-model="word">
+        <p>{{word}}</p>
+        <button v-on:click="sayHi">change model</button>
+    </div>
+`
+function init(con, id, html) {
+    var div = document.createElement("div")
+    div.id = id
+    div.innerHTML = html
+    con.appendChild(div)
+    var vm = new MVVM({
+        el: id,
+        data: {
+            word: 'Hello World!'
+        },
+        methods: {
+            sayHi: function() {
+                this.word = 'Hi, everybody!';
+            }
+        }
+    });
+    return vm
+}
+init(document.getElementById("c1"), "#app", html)
+init(document.getElementById("c2"), "#app2", html2)
 // nodeType
 // 1	Element	代表元素	Element, Text, Comment, ProcessingInstruction, CDATASection, EntityReference
 // 2	Attr	代表属性	Text, EntityReference
